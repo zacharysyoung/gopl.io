@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os/exec"
 	"testing"
 	"time"
@@ -25,7 +26,9 @@ func buildFetchAll() {
 }
 
 func TestConcurrentFetchAll(t *testing.T) {
+	log.Println("main_test.go - starting build")
 	buildFetchAll()
+	log.Println("main_test.go - finished build")
 
 	// Elapsed should be around 2s, no more than the longest wait
 	fetchAllCmd := exec.Command(
@@ -38,14 +41,19 @@ func TestConcurrentFetchAll(t *testing.T) {
 	defer gopltest.StopListener(srv)
 
 	beg := time.Now()
-	_, err := fetchAllCmd.Output()
+	log.Println("main_test.go - starting exec")
+	fetchAllOutput, err := fetchAllCmd.CombinedOutput()
 	if err != nil {
 		t.Error(err)
 	}
 	elapsed := time.Since(beg)
 
+	if testing.Verbose() {
+		fmt.Print(string(fetchAllOutput))
+	}
+
 	min := 2 * time.Second
-	max := min + 150*time.Millisecond
+	max := min + 150*time.Millisecond // allow for some latency in the processes foo
 	if elapsed < min || elapsed > max {
 		t.Errorf("expected all requests to take no less than %s and no more than %s, it actually took %s", min, max, elapsed)
 	}

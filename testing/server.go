@@ -3,6 +3,7 @@ package testing
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -43,10 +44,12 @@ func StartListener() *http.Server {
 	}
 	http.HandleFunc("/test", test)
 	go srv.ListenAndServe()
+	log.Println("server.go - listening and serving up", srv.Addr)
 	return srv
 }
 
 // StopListener calls Shutdown(context.Background()) on srv
 func StopListener(srv *http.Server) {
 	srv.Shutdown(context.Background())
+	log.Println("server.go - shut down", srv.Addr)
 }

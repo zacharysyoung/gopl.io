@@ -11,21 +11,24 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"time"
 )
 
 func main() {
+	args := os.Args[1:]
 	start := time.Now()
+	log.Printf("fetchall.go - starting with %d args", len(args))
 	ch := make(chan string)
-	for _, url := range os.Args[1:] {
+	for _, url := range args {
 		go fetch(url, ch) // start a goroutine
 	}
-	for range os.Args[1:] {
-		fmt.Println(<-ch) // receive from channel ch
+	for range args {
+		log.Println("fetchall.go - ", <-ch) // receive from channel ch
 	}
-	fmt.Printf("%.2fs elapsed\n", time.Since(start).Seconds())
+	log.Printf("fetchall.go - %.2fs elapsed\n", time.Since(start).Seconds())
 }
 
 func fetch(url string, ch chan<- string) {
