@@ -1,5 +1,5 @@
 module gopl.io
 
-go 1.16
+go 1.18
 
-require golang.org/x/net v0.0.0-20210929193557-e81a3d93ecf6
+require golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
