@@ -31,6 +31,8 @@ func test(w http.ResponseWriter, req *http.Request) {
 	time.Sleep(timeout)
 
 	fmt.Fprint(w, strings.Repeat("x", size))
+
+	log.Printf("server.go - slept for %s and wrote %d bytes\n", timeout, size)
 }
 
 // StartListener starts and returns an *http.Server, listening for calls to

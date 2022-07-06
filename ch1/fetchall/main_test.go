@@ -35,6 +35,7 @@ func TestConcurrentFetchAll(t *testing.T) {
 		"./fetchall",
 		"http://localhost:8889/test?timeout=2s&size=50",
 		"http://localhost:8889/test?timeout=1.5s&size=2550",
+		"http://localhost:8889/test?timeout=0.5s&size=12550",
 	)
 
 	srv := gopltest.StartListener()

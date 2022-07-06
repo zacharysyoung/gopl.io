@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"testing"
 	"time"
@@ -58,6 +59,9 @@ func TestListener(t *testing.T) {
 	srv := StartListener()
 
 	for _, test := range tests {
+		if testing.Verbose() {
+			log.Printf("testing, timeout:%s, size:%d", test.timeout, test.sizeB)
+		}
 		go testEnpoint(test, srv, done)
 	}
 	for len(done) < len(tests) {
