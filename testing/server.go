@@ -10,14 +10,18 @@ import (
 	"time"
 )
 
+// test responds with a specific byte-sized payload, after a specific amount of time.
+// It accepts the following query params:
+// - sleep: a time.Duration formatted string (e.g., 1.5s, 750ms); defaults to "0s"
+// - size: an integer; defaults to "1024" (bytes)
 func test(w http.ResponseWriter, req *http.Request) {
 	q := req.URL.Query()
 
-	timeoutStr := q.Get("timeout")
-	if timeoutStr == "" {
-		timeoutStr = "0s"
+	sleepStr := q.Get("sleep")
+	if sleepStr == "" {
+		sleepStr = "0s"
 	}
-	timeout, err := time.ParseDuration(timeoutStr)
+	sleep, err := time.ParseDuration(sleepStr)
 	if err != nil {
 		panic(err)
 	}
@@ -28,18 +32,15 @@ func test(w http.ResponseWriter, req *http.Request) {
 	}
 	size, _ := strconv.Atoi(sizeStr)
 
-	time.Sleep(timeout)
+	time.Sleep(sleep)
 
 	fmt.Fprint(w, strings.Repeat("x", size))
 
-	log.Printf("server.go - slept for %s and wrote %d bytes\n", timeout, size)
+	log.Printf("server.go - slept for %s and wrote %d bytes\n", sleep, size)
 }
 
-// StartListener starts and returns an *http.Server, listening for calls to
-// http://localhost:8889/test?timeout=XX&size=YY
-//
-// -timeout: a time.Duration formatted string, e.g.: 1.5s, 750ms
-// -size: an int byte count
+// StartListener starts and returns an *http.Server listening
+// for calls to http://localhost:8889
 func StartListener() *http.Server {
 	srv := &http.Server{
 		Addr: "localhost:8889",

@@ -3,24 +3,23 @@ package testing
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"testing"
 	"time"
 )
 
-// TestListener tests that server honors the timeout and size params; runs
+// TestListener tests that server honors the sleep and size params; runs
 // multiple GETs concurrently for speedier testing.
 func TestListener(t *testing.T) {
 	type Test struct {
-		timeout time.Duration
-		sizeB   int
+		sleep time.Duration
+		sizeB int
 	}
 
 	testEnpoint := func(test Test, srv *http.Server, done chan<- bool) {
-		// Use %s formatter for timeout (time.Duration)
-		url := fmt.Sprintf("http://%s/test?timeout=%s&size=%d", srv.Addr, test.timeout, test.sizeB)
+		// Use %s formatter for sleep (time.Duration)
+		url := fmt.Sprintf("http://%s/test?sleep=%s&size=%d", srv.Addr, test.sleep, test.sizeB)
 
 		beg := time.Now()
 		resp, err := http.Get(url)
@@ -29,15 +28,15 @@ func TestListener(t *testing.T) {
 		}
 		dur := time.Since(beg)
 
-		if dur < test.timeout {
-			t.Errorf("Expected test endpoint to sleep at least %d secs, only slept for %v\n", test.timeout, dur)
+		if dur < test.sleep {
+			t.Errorf("Expected test endpoint to sleep at least %d secs, only slept for %v\n", test.sleep, dur)
 		}
-		if dur > test.timeout+500*time.Millisecond {
-			t.Errorf("Expected test endpoint to sleep %d secs plus another 0.5 secs, actually slept for %v\n", test.timeout, dur)
+		if dur > test.sleep+500*time.Millisecond {
+			t.Errorf("Expected test endpoint to sleep %d secs plus another 0.5 secs, actually slept for %v\n", test.sleep, dur)
 		}
 
 		defer resp.Body.Close()
-		nbytes, err := io.Copy(ioutil.Discard, resp.Body)
+		nbytes, err := io.Copy(io.Discard, resp.Body)
 		if err != nil {
 			t.Errorf("Could not read body: %q\n", err)
 		}
@@ -60,7 +59,7 @@ func TestListener(t *testing.T) {
 
 	for _, test := range tests {
 		if testing.Verbose() {
-			log.Printf("testing, timeout:%s, size:%d", test.timeout, test.sizeB)
+			log.Printf("testing, sleep:%s, size:%d", test.sleep, test.sizeB)
 		}
 		go testEnpoint(test, srv, done)
 	}
@@ -68,4 +67,8 @@ func TestListener(t *testing.T) {
 	}
 
 	StopListener(srv)
+}
+
+func TestEmptyParams(t *testing.T) {
+
 }

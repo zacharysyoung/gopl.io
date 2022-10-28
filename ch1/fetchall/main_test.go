@@ -33,9 +33,9 @@ func TestConcurrentFetchAll(t *testing.T) {
 	// Elapsed should be around 2s, no more than the longest wait
 	fetchAllCmd := exec.Command(
 		"./fetchall",
-		"http://localhost:8889/test?timeout=2s&size=50",
-		"http://localhost:8889/test?timeout=1.5s&size=2550",
-		"http://localhost:8889/test?timeout=0.5s&size=12550",
+		"http://localhost:8889/test?sleep=2s&size=50",
+		"http://localhost:8889/test?sleep=1.5s&size=2550",
+		"http://localhost:8889/test?sleep=0.5s&size=12550",
 	)
 
 	srv := gopltest.StartListener()
@@ -54,7 +54,7 @@ func TestConcurrentFetchAll(t *testing.T) {
 	}
 
 	min := 2 * time.Second
-	max := min + 150*time.Millisecond // allow for some latency in the processes foo
+	max := min + 150*time.Millisecond // allow for some latency in the processes
 	if elapsed < min || elapsed > max {
 		t.Errorf("expected all requests to take no less than %s and no more than %s, it actually took %s", min, max, elapsed)
 	}
