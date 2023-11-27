@@ -24,49 +24,21 @@ const (
 
 var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
 
-func main() {
-	type point struct {
-		ax, ay, bx, by, cx, cy, dx, dy float64
-		z                              float64
-	}
-	var (
-		maxZ, minZ float64
-		points     []point
-	)
-	for i := 0; i < cells; i++ {
-		for j := 0; j < cells; j++ {
-			ax, ay, _, err := corner(i+1, j)
-			if err != nil {
-				continue
-			}
-			bx, by, _, err := corner(i, j)
-			if err != nil {
-				continue
-			}
-			cx, cy, _, err := corner(i, j+1)
-			if err != nil {
-				continue
-			}
-			dx, dy, z, err := corner(i+1, j+1)
-			if err != nil {
-				continue
-			}
-			if z < minZ {
-				minZ = z
-			}
-			if z > maxZ {
-				maxZ = z
-			}
-			points = append(points, point{ax, ay, bx, by, cx, cy, dx, dy, z})
-		}
-	}
+type polygon struct {
+	ax, ay, bx, by, cx, cy, dx, dy float64
+	z                              float64
+}
 
-	fillPos := []string{"#dddddd"}
+func main() {
+
+	polygons, minZ, maxZ := getPolygons()
+
+	fillPos := []string{"#fff"}
 	for i := 1; i < 16; i++ {
 		fill := fmt.Sprintf("#%02x%02x%02x", 225+(2*i), 195-(i*13), 195-(i*13))
 		fillPos = append(fillPos, fill)
 	}
-	fillNeg := []string{"#dddddd"}
+	fillNeg := []string{"000"}
 	for i := 1; i < 16; i++ {
 		fill := fmt.Sprintf("#%02x%02x%02x", 195-(i*13), 195-(i*13), 225+(2*i))
 		fillNeg = append(fillNeg, fill)
@@ -85,7 +57,7 @@ func main() {
 		i    int
 		fill string
 	)
-	for _, p := range points {
+	for _, p := range polygons {
 		if p.z > 0 {
 			i = int(p.z / (maxDelta / 15))
 			fill = fillPos[i]
@@ -98,6 +70,50 @@ func main() {
 	}
 
 	fmt.Println("</svg>")
+}
+
+func getPolygons() (polygons []polygon, minZ, maxZ float64) {
+	updateMinMax := func(z float64) {
+		if z < minZ {
+			minZ = z
+		}
+		if z > maxZ {
+			maxZ = z
+		}
+	}
+	for i := 0; i < cells; i++ {
+		for j := 0; j < cells; j++ {
+			ax, ay, az, err := corner(i+1, j)
+			if err != nil {
+				continue
+			}
+			updateMinMax(az)
+
+			bx, by, bz, err := corner(i, j)
+			if err != nil {
+				continue
+			}
+			updateMinMax(bz)
+
+			cx, cy, cz, err := corner(i, j+1)
+			if err != nil {
+				continue
+			}
+			updateMinMax(cz)
+
+			dx, dy, dz, err := corner(i+1, j+1)
+			if err != nil {
+				continue
+			}
+			updateMinMax(dz)
+
+			z := (az + bz + cz + dz) / 4
+
+			polygons = append(polygons, polygon{ax, ay, bx, by, cx, cy, dx, dy, z})
+		}
+	}
+
+	return
 }
 
 var ErrInfZ = errors.New("non-finite z, bad polygon") // Ex 3.1
