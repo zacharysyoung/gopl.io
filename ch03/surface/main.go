@@ -11,26 +11,30 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"math"
-	"os"
+	"net/http"
+	"net/url"
+	"strconv"
 )
 
 const (
-	xyrange = 30.0 // axis ranges (-xyrange..+xyrange)
+	_width, _height = 600, 320 // canvas size in pixels
+	_cells          = 100      // number of grid cells)
+	_xyrange        = 30.0     // axis ranges (-xyrange..+xyrange)
 
-	angle = math.Pi / 6 // angle of x, y axes (=30°)
+	_angle = math.Pi / 6 // angle of x, y axes (=30°)
 )
 
 var (
-	// Configurable
-	width, height = 600, 320 // canvas size in pixels
-	cells         = 100      // number of grid cells)
+	width, height = _width, _height
+	cells         = _cells
 	// Derived
-	xyscale = float64(width) / 2 / xyrange // pixels per x or y unit
-	zscale  = float64(height) * 0.4        // pixels per z unit
+	xyscale = float64(width) / 2 / _xyrange // pixels per x or y unit
+	zscale  = float64(height) * 0.4         // pixels per z unit
 )
 
-var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
+var sin30, cos30 = math.Sin(_angle), math.Cos(_angle) // sin(30°), cos(30°)
 
 type polygon struct {
 	ax, ay, bx, by, cx, cy, dx, dy float64
@@ -55,13 +59,56 @@ func init() {
 	}
 }
 
+func getIntParam(q url.Values, key string, defVal int) (int, error) {
+	s := q.Get(key)
+	if s == "" {
+		return defVal, nil
+	}
+	x, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, err
+	}
+	return x, nil
+}
+
 func main() {
+	http.HandleFunc("/surface", func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		var err error
+		width, err = getIntParam(q, "width", _width)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "got width=%s; expected a positive int", q.Get("width"))
+			return
+		}
+		height, err = getIntParam(q, "height", _height)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "got height=%s; expected a positive int", q.Get("height"))
+			return
+		}
+		cells, err = getIntParam(q, "cells", _cells)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "got cells=%s; expected a positive int", q.Get("cells"))
+			return
+		}
+
+		w.Header().Set("Content-Type", "image/svg+xml")
+		surface(w)
+	})
+
+	log.Println("starting server at http://localhost:8999")
+	log.Fatalln(http.ListenAndServe(":8999", nil))
+}
+
+func surface(w io.Writer) {
 	polygons, minZ, maxZ := getPolygons()
 	absMaxZ := maxZ
 	if x := minZ * -1; x > absMaxZ {
 		absMaxZ = x
 	}
-	writeSVG(os.Stdout, polygons, absMaxZ)
+	writeSVG(w, polygons, absMaxZ)
 }
 
 func getPolygons() (polygons []polygon, minZ, maxZ float64) {
@@ -112,8 +159,8 @@ var ErrInfZ = errors.New("non-finite z, bad polygon") // Ex 3.1
 
 func corner(i, j int) (float64, float64, float64, error) {
 	// Find point (x,y) at corner of cell (i,j).
-	x := xyrange * (float64(i)/float64(cells) - 0.5)
-	y := xyrange * (float64(j)/float64(cells) - 0.5)
+	x := _xyrange * (float64(i)/float64(cells) - 0.5)
+	y := _xyrange * (float64(j)/float64(cells) - 0.5)
 
 	// Compute surface height z.
 	z := f(x, y)
@@ -134,7 +181,7 @@ func f(x, y float64) float64 {
 
 func writeSVG(w io.Writer, polygons []polygon, absMaxZ float64) {
 	fmt.Fprintf(w, "<svg xmlns='http://www.w3.org/2000/svg' "+
-		"style='stroke: grey; fill: white; stroke-width: 0.7' "+
+		"style='stroke: grey; fill: white; stroke-width: 0.1' "+
 		"width='%d' height='%d'>\n", width, height)
 
 	var fill string
