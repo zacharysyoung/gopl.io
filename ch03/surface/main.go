@@ -10,16 +10,24 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"math"
+	"os"
 )
 
 const (
-	width, height = 600, 320            // canvas size in pixels
-	cells         = 100                 // number of grid cells
-	xyrange       = 30.0                // axis ranges (-xyrange..+xyrange)
-	xyscale       = width / 2 / xyrange // pixels per x or y unit
-	zscale        = height * 0.4        // pixels per z unit
-	angle         = math.Pi / 6         // angle of x, y axes (=30°)
+	xyrange = 30.0 // axis ranges (-xyrange..+xyrange)
+
+	angle = math.Pi / 6 // angle of x, y axes (=30°)
+)
+
+var (
+	// Configurable
+	width, height = 600, 320 // canvas size in pixels
+	cells         = 100      // number of grid cells)
+	// Derived
+	xyscale = float64(width) / 2 / xyrange // pixels per x or y unit
+	zscale  = float64(height) * 0.4        // pixels per z unit
 )
 
 var sin30, cos30 = math.Sin(angle), math.Cos(angle) // sin(30°), cos(30°)
@@ -29,47 +37,31 @@ type polygon struct {
 	z                              float64
 }
 
-func main() {
+var (
+	fillPositive, fillNegative []string
+)
 
-	polygons, minZ, maxZ := getPolygons()
-
-	fillPos := []string{"#fff"}
+func init() {
+	fillPositive = []string{"#fff"}
 	for i := 1; i < 16; i++ {
 		fill := fmt.Sprintf("#%02x%02x%02x", 225+(2*i), 195-(i*13), 195-(i*13))
-		fillPos = append(fillPos, fill)
+		fillPositive = append(fillPositive, fill)
 	}
-	fillNeg := []string{"000"}
+
+	fillNegative = []string{"000"}
 	for i := 1; i < 16; i++ {
 		fill := fmt.Sprintf("#%02x%02x%02x", 195-(i*13), 195-(i*13), 225+(2*i))
-		fillNeg = append(fillNeg, fill)
+		fillNegative = append(fillNegative, fill)
 	}
+}
 
-	maxDelta := maxZ
-	if x := minZ * -1; x > maxDelta {
-		maxDelta = x
+func main() {
+	polygons, minZ, maxZ := getPolygons()
+	absMaxZ := maxZ
+	if x := minZ * -1; x > absMaxZ {
+		absMaxZ = x
 	}
-
-	fmt.Printf("<svg xmlns='http://www.w3.org/2000/svg' "+
-		"style='stroke: grey; fill: white; stroke-width: 0.7' "+
-		"width='%d' height='%d'>", width, height)
-
-	var (
-		i    int
-		fill string
-	)
-	for _, p := range polygons {
-		if p.z > 0 {
-			i = int(p.z / (maxDelta / 15))
-			fill = fillPos[i]
-		} else {
-			i = int((p.z * -1) / (maxDelta / 15))
-			fill = fillNeg[i]
-		}
-		fmt.Printf("<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='%s'/>\n",
-			p.ax, p.ay, p.bx, p.by, p.cx, p.cy, p.dx, p.dy, fill)
-	}
-
-	fmt.Println("</svg>")
+	writeSVG(os.Stdout, polygons, absMaxZ)
 }
 
 func getPolygons() (polygons []polygon, minZ, maxZ float64) {
@@ -120,8 +112,8 @@ var ErrInfZ = errors.New("non-finite z, bad polygon") // Ex 3.1
 
 func corner(i, j int) (float64, float64, float64, error) {
 	// Find point (x,y) at corner of cell (i,j).
-	x := xyrange * (float64(i)/cells - 0.5)
-	y := xyrange * (float64(j)/cells - 0.5)
+	x := xyrange * (float64(i)/float64(cells) - 0.5)
+	y := xyrange * (float64(j)/float64(cells) - 0.5)
 
 	// Compute surface height z.
 	z := f(x, y)
@@ -130,14 +122,33 @@ func corner(i, j int) (float64, float64, float64, error) {
 	}
 
 	// Project (x,y,z) isometrically onto 2-D SVG canvas (sx,sy).
-	sx := width/2 + (x-y)*cos30*xyscale
-	sy := height/2 + (x+y)*sin30*xyscale - z*zscale
+	sx := float64(width)/2 + (x-y)*cos30*xyscale
+	sy := float64(height)/2 + (x+y)*sin30*xyscale - z*zscale
 	return sx, sy, z, nil
 }
 
 func f(x, y float64) float64 {
 	r := math.Hypot(x, y) // distance from (0,0)
 	return math.Sin(r) / r
+}
+
+func writeSVG(w io.Writer, polygons []polygon, absMaxZ float64) {
+	fmt.Fprintf(w, "<svg xmlns='http://www.w3.org/2000/svg' "+
+		"style='stroke: grey; fill: white; stroke-width: 0.7' "+
+		"width='%d' height='%d'>\n", width, height)
+
+	var fill string
+	for _, p := range polygons {
+		if p.z > 0 {
+			fill = fillPositive[int(p.z/(absMaxZ/15))]
+		} else {
+			fill = fillNegative[int((p.z*-1)/(absMaxZ/15))]
+		}
+		fmt.Fprintf(w, "<polygon points='%g,%g %g,%g %g,%g %g,%g' fill='%s'/>\n",
+			p.ax, p.ay, p.bx, p.by, p.cx, p.cy, p.dx, p.dy, fill)
+	}
+
+	fmt.Fprintln(w, "</svg>")
 }
 
 //!-
