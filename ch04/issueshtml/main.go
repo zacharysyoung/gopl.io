@@ -10,7 +10,7 @@ import (
 	"log"
 	"os"
 
-	"gopl.io/ch4/github"
+	"gopl.io/ch04/github"
 )
 
 //!+template
@@ -38,7 +38,7 @@ var issueList = template.Must(template.New("issuelist").Parse(`
 
 //!-template
 
-//!+
+// !+
 func main() {
 	result, err := github.SearchIssues(os.Args[1:])
 	if err != nil {

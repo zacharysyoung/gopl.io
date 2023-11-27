@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-//!+main
+// !+main
 func bigSlowOperation() {
 	defer trace("bigSlowOperation")() // don't forget the extra parentheses
 	// ...lots of work...
@@ -32,7 +32,7 @@ func main() {
 
 /*
 !+output
-$ go build gopl.io/ch5/trace
+$ go build gopl.io/ch05/trace
 $ ./trace
 2015/11/18 09:53:26 enter bigSlowOperation
 2015/11/18 09:53:36 exit bigSlowOperation (10.000589217s)

@@ -12,10 +12,10 @@ import (
 	"log"
 	"os"
 
-	"gopl.io/ch4/github"
+	"gopl.io/ch04/github"
 )
 
-//!+
+// !+
 func main() {
 	result, err := github.SearchIssues(os.Args[1:])
 	if err != nil {
@@ -32,7 +32,7 @@ func main() {
 
 /*
 //!+textoutput
-$ go build gopl.io/ch4/issues
+$ go build gopl.io/ch04/issues
 $ ./issues repo:golang/go is:open json decoder
 13 issues:
 #5680    eaigner encoding/json: set key converter on en/decoder

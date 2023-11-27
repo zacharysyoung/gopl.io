@@ -7,7 +7,6 @@
 //
 // This version uses bounded parallelism.
 // For simplicity, it does not address the termination problem.
-//
 package main
 
 import (
@@ -15,7 +14,7 @@ import (
 	"log"
 	"os"
 
-	"gopl.io/ch5/links"
+	"gopl.io/ch05/links"
 )
 
 func crawl(url string) []string {
@@ -27,7 +26,7 @@ func crawl(url string) []string {
 	return list
 }
 
-//!+
+// !+
 func main() {
 	worklist := make(chan []string)  // lists of URLs, may have duplicates
 	unseenLinks := make(chan string) // de-duplicated URLs

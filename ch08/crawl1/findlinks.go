@@ -16,10 +16,10 @@ import (
 	"log"
 	"os"
 
-	"gopl.io/ch5/links"
+	"gopl.io/ch05/links"
 )
 
-//!+crawl
+// !+crawl
 func crawl(url string) []string {
 	fmt.Println(url)
 	list, err := links.Extract(url)
@@ -31,7 +31,7 @@ func crawl(url string) []string {
 
 //!-crawl
 
-//!+main
+// !+main
 func main() {
 	worklist := make(chan []string)
 
@@ -56,7 +56,7 @@ func main() {
 
 /*
 //!+output
-$ go build gopl.io/ch8/crawl1
+$ go build gopl.io/ch08/crawl1
 $ ./crawl1 http://gopl.io/
 http://gopl.io/
 https://golang.org/help/

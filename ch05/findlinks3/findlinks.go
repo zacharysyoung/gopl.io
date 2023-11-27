@@ -11,10 +11,10 @@ import (
 	"log"
 	"os"
 
-	"gopl.io/ch5/links"
+	"gopl.io/ch05/links"
 )
 
-//!+breadthFirst
+// !+breadthFirst
 // breadthFirst calls f for each item in the worklist.
 // Any items returned by f are added to the worklist.
 // f is called at most once for each item.
@@ -34,7 +34,7 @@ func breadthFirst(f func(item string) []string, worklist []string) {
 
 //!-breadthFirst
 
-//!+crawl
+// !+crawl
 func crawl(url string) []string {
 	fmt.Println(url)
 	list, err := links.Extract(url)
@@ -46,7 +46,7 @@ func crawl(url string) []string {
 
 //!-crawl
 
-//!+main
+// !+main
 func main() {
 	// Crawl the web breadth-first,
 	// starting from the command-line arguments.

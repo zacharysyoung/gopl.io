@@ -16,7 +16,7 @@ import (
 	"golang.org/x/net/html"
 )
 
-// Copied from gopl.io/ch5/outline2.
+// Copied from gopl.io/ch05/outline2.
 func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
 	if pre != nil {
 		pre(n)
@@ -29,7 +29,7 @@ func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
 	}
 }
 
-//!+
+// !+
 func title(url string) error {
 	resp, err := http.Get(url)
 	if err != nil {

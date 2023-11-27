@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"gopl.io/ch8/cake"
+	"gopl.io/ch08/cake"
 )
 
 var defaults = cake.Shop{

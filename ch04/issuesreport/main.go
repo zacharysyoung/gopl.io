@@ -12,10 +12,10 @@ import (
 	"text/template"
 	"time"
 
-	"gopl.io/ch4/github"
+	"gopl.io/ch04/github"
 )
 
-//!+template
+// !+template
 const templ = `{{.TotalCount}} issues:
 {{range .Items}}----------------------------------------
 Number: {{.Number}}
@@ -26,14 +26,14 @@ Age:    {{.CreatedAt | daysAgo}} days
 
 //!-template
 
-//!+daysAgo
+// !+daysAgo
 func daysAgo(t time.Time) int {
 	return int(time.Since(t).Hours() / 24)
 }
 
 //!-daysAgo
 
-//!+exec
+// !+exec
 var report = template.Must(template.New("issuelist").
 	Funcs(template.FuncMap{"daysAgo": daysAgo}).
 	Parse(templ))
@@ -70,7 +70,7 @@ func noMust() {
 
 /*
 //!+output
-$ go build gopl.io/ch4/issuesreport
+$ go build gopl.io/ch04/issuesreport
 $ ./issuesreport repo:golang/go is:open json decoder
 13 issues:
 ----------------------------------------

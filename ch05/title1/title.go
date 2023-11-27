@@ -8,7 +8,7 @@ package main
 
 /*
 //!+output
-$ go build gopl.io/ch5/title1
+$ go build gopl.io/ch05/title1
 $ ./title1 http://gopl.io
 The Go Programming Language
 $ ./title1 https://golang.org/doc/effective_go.html
@@ -28,7 +28,7 @@ import (
 	"golang.org/x/net/html"
 )
 
-// Copied from gopl.io/ch5/outline2.
+// Copied from gopl.io/ch05/outline2.
 func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
 	if pre != nil {
 		pre(n)
@@ -41,7 +41,7 @@ func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
 	}
 }
 
-//!+
+// !+
 func title(url string) error {
 	resp, err := http.Get(url)
 	if err != nil {

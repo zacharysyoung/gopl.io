@@ -38,7 +38,7 @@ func toJPEG(in io.Reader, out io.Writer) error {
 
 /*
 //!+with
-$ go build gopl.io/ch3/mandelbrot
+$ go build gopl.io/ch03/mandelbrot
 $ go build gopl.io/ch10/jpeg
 $ ./mandelbrot | ./jpeg >mandelbrot.jpg
 Input format = png
